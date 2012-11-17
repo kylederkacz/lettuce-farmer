@@ -1,0 +1,3 @@
+[console_scripts]
+lettuce = lettuce.bin:main
+

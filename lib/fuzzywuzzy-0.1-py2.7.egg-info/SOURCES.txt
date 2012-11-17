@@ -1,0 +1,10 @@
+fuzzywuzzy/__init__.py
+fuzzywuzzy/benchmarks.py
+fuzzywuzzy/fuzz.py
+fuzzywuzzy/process.py
+fuzzywuzzy/tests.py
+fuzzywuzzy/utils.py
+fuzzywuzzy.egg-info/PKG-INFO
+fuzzywuzzy.egg-info/SOURCES.txt
+fuzzywuzzy.egg-info/dependency_links.txt
+fuzzywuzzy.egg-info/top_level.txt

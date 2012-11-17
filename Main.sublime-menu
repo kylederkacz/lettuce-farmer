@@ -1,0 +1,15 @@
+[
+    {
+        "caption": "Project",
+        "id": "project",
+        "children":
+        [
+            { "caption": "-" },
+            { 
+                "command": "lettuce_farmer",
+                "caption": "Reload Lettuce Definitions",
+                "args": {"action": "reload"}
+            }
+        ]
+    }
+]

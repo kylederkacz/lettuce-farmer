@@ -1,0 +1,4 @@
+lettuce
+lettuce/django/tests
+lettuce/django/management
+lettuce/django

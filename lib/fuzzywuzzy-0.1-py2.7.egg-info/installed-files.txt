@@ -1,0 +1,17 @@
+../fuzzywuzzy/__init__.py
+../fuzzywuzzy/benchmarks.py
+../fuzzywuzzy/fuzz.py
+../fuzzywuzzy/process.py
+../fuzzywuzzy/tests.py
+../fuzzywuzzy/utils.py
+../fuzzywuzzy/__init__.pyc
+../fuzzywuzzy/benchmarks.pyc
+../fuzzywuzzy/fuzz.pyc
+../fuzzywuzzy/process.pyc
+../fuzzywuzzy/tests.pyc
+../fuzzywuzzy/utils.pyc
+./
+dependency_links.txt
+PKG-INFO
+SOURCES.txt
+top_level.txt

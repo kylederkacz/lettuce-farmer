@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: fuzzywuzzy
+Version: 0.1
+Summary: Fuzzy string matching in python
+Home-page: https://github.com/seatgeek/fuzzywuzzy/
+Author: Adam Cohen
+Author-email: adam@seatgeek.com
+License: UNKNOWN
+Description: UNKNOWN
+Platform: UNKNOWN
