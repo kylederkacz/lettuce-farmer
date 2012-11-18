@@ -24,6 +24,10 @@ STEP_PATTERN = re.compile("@step\(u?[\'\\\"](?P<step_regex>.*)[\'\\\"]\)([\s.]*)
 FEATURE_REGISTRY = []
 FEATURE_STEP_REGISTRY = {}
 
+QUEUE = {}
+
+ERROR_MARKS_KEY = 'lettuce.feature.marks'
+
 
 class StepLoader(threading.Thread):
     complete = 0
@@ -101,7 +105,10 @@ class StepLoader(threading.Thread):
         feature = lettuce.core.Feature.from_file(file)
         for scenario in feature.scenarios:
             for step in scenario.steps:
-                matched, definition = step.pre_run(True)
+                try:
+                    matched, definition = step.pre_run(True)
+                except lettuce.exceptions.NoDefinitionFound:
+                    pass
                 FEATURE_STEP_REGISTRY[step.sentence] = \
                     StepLoader.tokenize_sentence(step, matched)
 
@@ -112,19 +119,19 @@ class StepLoader(threading.Thread):
 
 class FeatureValidator(threading.Thread):
 
-    def __init__(self, file):
-        self.file = file
+    def __init__(self, text, id):
+        self.text = text
+        self.id = id
+        threading.Thread.__init__(self)
 
     def run(self):
-        feature = lettuce.core.Feature.from_file(file)
+        feature = lettuce.core.Feature.from_string(self.text)
         for scenario in feature.scenarios:
             for step in scenario.steps:
-                matched, definition = step.pre_run(True)
-                print dir(step)
-
-    @classmethod
-    def show_validations(cls, lines, window):
-        pass
+                try:
+                    matched, definition = step.pre_run(True)
+                except lettuce.exceptions.NoDefinitionFound:
+                    QUEUE[self.id].append(step)
 
 
 class LettuceFarmerEventListener(sublime_plugin.EventListener):
@@ -134,6 +141,10 @@ class LettuceFarmerEventListener(sublime_plugin.EventListener):
     def __init__(self):
         super(LettuceFarmerEventListener, self).__init__()
         _reload_step_definitions(sublime.active_window())
+
+    def on_modified(self, view):
+        if _get_file_extension(view.file_name()) == FEATURES_EXTENSION:
+            _queue_validator(view)
 
     def on_activated(self, view):
         if _get_file_extension(view.file_name()) == FEATURES_EXTENSION:
@@ -147,8 +158,7 @@ class LettuceFarmerEventListener(sublime_plugin.EventListener):
             StepLoader.load_steps_in_file(view.file_name())
         elif extension == FEATURES_EXTENSION:
             StepLoader.load_features_in_file(view.file_name())
-            validator = FeatureValidator(view.file_name())
-            validator.start()
+            _queue_validator(view)
 
     def on_query_completions(self, view, prefix, locations):
         if self.is_active:
@@ -166,6 +176,47 @@ class LettuceFarmer(sublime_plugin.TextCommand):
             def reload_result(result):
                 sublime.message_dialog(result)
             _reload_step_definitions(sublime.active_window(), reload_result)
+
+
+def _queue_validator(view, callback=None):
+    if view.id() in QUEUE.keys():
+        return
+
+    QUEUE[view.id()] = []
+    text = view.substr(sublime.Region(0, view.size())).encode('utf-8')
+    validator = FeatureValidator(text, view.id())
+    validator.start()
+
+    def _validator_callback():
+        if len(QUEUE[view.id()]):
+            _add_marks(QUEUE[view.id()], view)
+        del QUEUE[view.id()]
+
+    _handle_feature_validator(validator, callback=_validator_callback)
+
+
+def _add_marks(steps, view):
+    _erase_marks(view)
+    regions = []
+    for step in steps:
+        if step.has_definition or len(step.sentence) < 3:
+            continue
+
+        if step.described_at.line:
+            line = step.described_at.line
+            lines = [view.full_line(view.text_point(line - 1, 0))]
+        else:
+            sentence = r"\s{%d}%s$" % (step.indentation, step.sentence)
+            matches = view.find_all(sentence)
+            lines = [view.full_line(region) for region in matches]
+        regions.extend(lines)
+
+    view.add_regions(ERROR_MARKS_KEY, regions, 'lettuce.feature.outline',
+        'dot', sublime.DRAW_OUTLINED)
+
+
+def _erase_marks(view):
+    view.erase_regions(ERROR_MARKS_KEY)
 
 
 def _handle_feature_validator(thread, callback=None):
@@ -200,8 +251,7 @@ def _handle_step_loader(thread, window, callback=None):
             callback), 50)
         return
 
-    sublime.set_timeout(lambda: window.active_view().erase_status(status_key),
-        300)
+    window.active_view().erase_status(status_key)
 
     if callback:
         callback('Successfully loaded %d step definitions and %d steps.' %
