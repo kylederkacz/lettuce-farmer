@@ -11,6 +11,18 @@ the hope.
 
 Installation
 ============
+**IMPORTANT:** Once Lettuce-Farmer is installed you must enable the
+auto-completion for feature files in your preferences. For most people this
+will be in the default settings 'Settings - Default' (Sublime Text 2 >
+Preferences > Settings - Default), but if you have the 'auto_complete_selector'
+defined in another file you will need to change this there.
+
+    // Controls what scopes auto complete will be triggered in
+    "auto_complete_selector": "source - comment, text.lettuce.feature",
+
+Your list may not look the same, but the critical part is that
+'text.lettuce.feature' is present.
+
 Using Package Control:
 ----------------------
 [Package Control](http://wbond.net/sublime_packages/package_control) is by far

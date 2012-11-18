@@ -18,15 +18,14 @@ LOADING_STATUS_LENGTH = 25
 PYTHON_EXTENSION = 'py'
 FEATURES_EXTENSION = 'feature'
 
-STEP_PATTERN = "@step\(u?[\'\\\"](?P<step_regex>.*)[\'\\\"]\)([\s.]*)" + \
+STEP_PATTERN = re.compile("@step\(u?[\'\\\"](?P<step_regex>.*)[\'\\\"]\)([\s.]*)" + \
     "(?P<step_function>def (?P<step_function_name>[\w\d\_]+)" + \
-    "\s*\((?P<step_function_args>[\w\d\,\= ]*)\))"
+    "\s*\((?P<step_function_args>[\w\d\,\= ]*)\))", re.MULTILINE)
 FEATURE_REGISTRY = []
 FEATURE_STEP_REGISTRY = {}
 
 
 class StepLoader(threading.Thread):
-    step_pattern = re.compile(STEP_PATTERN, re.MULTILINE)
     complete = 0
     total_count = 0
     load_count = 0
@@ -44,7 +43,7 @@ class StepLoader(threading.Thread):
         self.load_count = 0
         self.init_files()
         self.load_steps()
-        self.load_features()
+        self.load_feature_files()
 
     def init_files(self):
         for folder in self.folders:
@@ -71,11 +70,12 @@ class StepLoader(threading.Thread):
             self.complete = int(round((self.load_count / self.total_count) *
                 LOADING_STATUS_LENGTH))
 
-    def load_steps_in_file(self, file):
+    @classmethod
+    def load_steps_in_file(cls, file):
         ifile = open(file, 'r')
         text = ifile.read()
         ifile.close()
-        for step in self.step_pattern.finditer(text):
+        for step in STEP_PATTERN.finditer(text):
             definition = step.group('step_regex')
             params = {
                 'regex': definition,
@@ -89,22 +89,42 @@ class StepLoader(threading.Thread):
             if definition not in lettuce.core.STEP_REGISTRY.keys():
                 lettuce.core.STEP_REGISTRY[definition] = temp_func
 
-    def load_features(self):
+    def load_feature_files(self):
         for file in self.feature_files:
-            FEATURE_REGISTRY.append(lettuce.core.Feature.from_file(file))
+            StepLoader.load_features_in_file(file)
             self.load_count += 1
             self.complete = int(round(self.load_count / self.total_count) *
                 LOADING_STATUS_LENGTH)
 
-        for feature in FEATURE_REGISTRY:
-            for scenario in feature.scenarios:
-                for step in scenario.steps:
-                    matched, definition = step.pre_run(True)
-                    FEATURE_STEP_REGISTRY[step.sentence] = \
-                        self._tokenize_sentence(step, matched)
+    @classmethod
+    def load_features_in_file(cls, file):
+        feature = lettuce.core.Feature.from_file(file)
+        for scenario in feature.scenarios:
+            for step in scenario.steps:
+                matched, definition = step.pre_run(True)
+                FEATURE_STEP_REGISTRY[step.sentence] = \
+                    StepLoader.tokenize_sentence(step, matched)
 
-    def _tokenize_sentence(self, step, regex):
+    @classmethod
+    def tokenize_sentence(cls, step, regex):
         return step.sentence
+
+
+class FeatureValidator(threading.Thread):
+
+    def __init__(self, file):
+        self.file = file
+
+    def run(self):
+        feature = lettuce.core.Feature.from_file(file)
+        for scenario in feature.scenarios:
+            for step in scenario.steps:
+                matched, definition = step.pre_run(True)
+                print dir(step)
+
+    @classmethod
+    def show_validations(cls, lines, window):
+        pass
 
 
 class LettuceFarmerEventListener(sublime_plugin.EventListener):
@@ -116,7 +136,7 @@ class LettuceFarmerEventListener(sublime_plugin.EventListener):
         _reload_step_definitions(sublime.active_window())
 
     def on_activated(self, view):
-        if _get_file_extension(view.file_name()) == 'feature':
+        if _get_file_extension(view.file_name()) == FEATURES_EXTENSION:
             self.is_active = True
         else:
             self.is_active = False
@@ -124,14 +144,11 @@ class LettuceFarmerEventListener(sublime_plugin.EventListener):
     def on_post_save(self, view):
         extension = _get_file_extension(view.file_name())
         if extension == PYTHON_EXTENSION:
-            steps = view.find_all("@step\(u?[\'\\\"](.*)[\'\\\"]\)")
-            for step in steps:
-                print view.substr(step)
-
-            # TODO: Update the step definitions
-            pass
-        elif extension == 'feature':
-            pass
+            StepLoader.load_steps_in_file(view.file_name())
+        elif extension == FEATURES_EXTENSION:
+            StepLoader.load_features_in_file(view.file_name())
+            validator = FeatureValidator(view.file_name())
+            validator.start()
 
     def on_query_completions(self, view, prefix, locations):
         if self.is_active:
@@ -145,17 +162,25 @@ class LettuceFarmer(sublime_plugin.TextCommand):
 
     def run(self, *args, **kwargs):
         action = kwargs.get('action')
-        print self.view.settings().get('auto_complete_selector')
         if action == 'reload':
             def reload_result(result):
                 sublime.message_dialog(result)
             _reload_step_definitions(sublime.active_window(), reload_result)
 
-    def is_visible(self):
-        '''
-        Determine if the menu items are available
-        '''
-        return True
+
+def _handle_feature_validator(thread, callback=None):
+    next_thread = None
+    if thread.is_alive():
+        next_thread = thread
+
+    thread = next_thread
+    if thread:
+        sublime.set_timeout(lambda: _handle_feature_validator(thread, callback),
+            50)
+        return
+
+    if callback:
+        callback()
 
 
 def _handle_step_loader(thread, window, callback=None):
@@ -176,7 +201,7 @@ def _handle_step_loader(thread, window, callback=None):
         return
 
     sublime.set_timeout(lambda: window.active_view().erase_status(status_key),
-        500)
+        300)
 
     if callback:
         callback('Successfully loaded %d step definitions and %d steps.' %
