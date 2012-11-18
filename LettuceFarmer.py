@@ -84,7 +84,7 @@ class StepLoader(threading.Thread):
             params = {
                 'regex': definition,
                 'function_name': step.group('step_function_name'),
-                'function_args': step.group('step_function_args'),
+                'function_args': step.group('step_function_args').split(', '),
             }
 
             def temp_func():
@@ -114,7 +114,21 @@ class StepLoader(threading.Thread):
 
     @classmethod
     def tokenize_sentence(cls, step, regex):
-        return step.sentence
+        if regex.re.pattern in lettuce.core.STEP_REGISTRY:
+            params = lettuce.core.STEP_REGISTRY[regex.re.pattern]()
+            if 'step' in params['function_args']:
+                params['function_args'].remove('step')
+            token = regex.string
+            offset = 0
+            for i, match in enumerate(regex.groups()):
+                replace = "<" + params['function_args'][i] + ">"
+                start = regex.start(i + 1) + offset
+                end = regex.end(i + 1) + offset
+                token = token[:start] + replace + token[end:]
+                offset = len(replace) - (regex.end(i + 1) - regex.start(i + 1))
+            return token
+        else:
+            return step.sentence
 
 
 class FeatureValidator(threading.Thread):
@@ -148,6 +162,7 @@ class LettuceFarmerEventListener(sublime_plugin.EventListener):
 
     def on_activated(self, view):
         if _get_file_extension(view.file_name()) == FEATURES_EXTENSION:
+            _queue_validator(view)
             self.is_active = True
         else:
             self.is_active = False
