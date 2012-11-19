@@ -19,7 +19,8 @@ LOADING_STATUS_LENGTH = 25
 PYTHON_EXTENSION = 'py'
 FEATURES_EXTENSION = 'feature'
 
-STEP_PATTERN = re.compile("@step\(u?[\'\\\"](?P<step_regex>.*)[\'\\\"]\)([\s.]*)" + \
+STEP_PATTERN = re.compile(
+    "@step\(u?[\'\\\"](?P<step_regex>.*)[\'\\\"]\)([\s.]*)" + \
     "(?P<step_function>def (?P<step_function_name>[\w\d\_]+)" + \
     "\s*\((?P<step_function_args>[\w\d\,\= ]*)\))", re.MULTILINE)
 FEATURE_REGISTRY = []
