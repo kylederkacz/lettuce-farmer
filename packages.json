@@ -11,7 +11,7 @@
                 "osx": [
                     {
                         "version": "0.1.0",
-                        "url": ""
+                        "url": "https://nodeload.github.com/kylederkacz/lettuce-farmer/zip/0.1.0"
                     }
                 ]
             }
