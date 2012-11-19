@@ -1,0 +1,20 @@
+{
+    "schema_version": "1.2",
+    "packages": [
+        {
+            "name": "LettuceFarmer",
+            "description": "Lettuce feature syntax highlighting, auto-completion, and step validation for SublimeText 2",
+            "author": "kylederkacz",
+            "homepage": "https://github.com/kylederkacz/lettuce-farmer",
+            "last_modified": "2012-11-18 22:13:00",
+            "platforms": {
+                "osx": [
+                    {
+                        "version": "0.1.0",
+                        "url": ""
+                    }
+                ]
+            }
+        }
+    ]
+}
