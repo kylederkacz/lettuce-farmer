@@ -11,7 +11,11 @@ libs_path = os.path.join(__path__, 'lib')
 if libs_path not in sys.path:
     sys.path.insert(0, libs_path)
 
-import lettuce
+try:
+    import lettuce
+except ImportError as e:
+    pass
+
 
 LOADING_STATUS_LENGTH = 25
 
