@@ -25,7 +25,7 @@ Your list may not look the same, but the critical part is that
 
 Using Package Control:
 ----------------------
-**NOT YET SUBMITTED TO PACKAGE CONTROL**
+**SUBMITTED BUT NOT YET PULLED INTO PACKAGE CONTROL**
 
 [Package Control](http://wbond.net/sublime_packages/package_control) is by far
 the easiest way to install Lettuce-Farmer. Once you have Package Control
@@ -40,7 +40,14 @@ where the directory via Sublime Text 2 > Preferences > Browse Packages...
 
     git clone https://github.com/kylederkacz/lettuce-farmer.git
 
+Manual:
+-------
+[Download](https://github.com/kylederkacz/lettuce-farmer/archive/master.zip) the
+plugin from Git and extract the contents into a folder in your Packages
+directory.
 
+To open your packages directory goto Sublime Text > Preferences > 
+Browse Packages...
 
 Platform Support
 ================
