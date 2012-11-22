@@ -104,15 +104,20 @@ class StepLoader(threading.Thread):
 
     @classmethod
     def load_features_in_file(cls, file):
-        feature = lettuce.core.Feature.from_file(file)
+        try:
+            feature = lettuce.core.Feature.from_file(file)
+        except:
+            return
         for scenario in feature.scenarios:
             for step in scenario.steps:
+                matched = False
                 try:
                     matched, definition = step.pre_run(True)
                 except lettuce.exceptions.NoDefinitionFound:
                     pass
-                FEATURE_STEP_REGISTRY[step.sentence] = \
-                    StepLoader.tokenize_sentence(step, matched)
+                if matched:
+                    FEATURE_STEP_REGISTRY[step.sentence] = \
+                        StepLoader.tokenize_sentence(step, matched)
 
     @classmethod
     def tokenize_sentence(cls, step, regex):
@@ -141,7 +146,10 @@ class FeatureValidator(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        feature = lettuce.core.Feature.from_string(self.text)
+        try:
+            feature = lettuce.core.Feature.from_string(self.text)
+        except:
+            return
         for scenario in feature.scenarios:
             for step in scenario.steps:
                 try:
