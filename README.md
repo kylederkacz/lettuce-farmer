@@ -13,9 +13,9 @@ Installation
 ============
 **IMPORTANT:** Once Lettuce-Farmer is installed you must enable the
 auto-completion for feature files in your preferences. For most people this
-will be in the default settings 'Settings - Default' (Sublime Text 2 >
-Preferences > Settings - Default), but if you have the 'auto_complete_selector'
-defined in another file you will need to change this there.
+will be in the default settings 'Settings - Default' (`Preferences > Settings -
+Default`), but if you have the 'auto_complete_selector' defined in another file
+you will need to change this there.
 
     // Controls what scopes auto complete will be triggered in
     "auto_complete_selector": "source - comment, text.lettuce.feature",
@@ -29,14 +29,14 @@ Using Package Control:
 
 [Package Control](http://wbond.net/sublime_packages/package_control) is by far
 the easiest way to install Lettuce-Farmer. Once you have Package Control
-installed and SublimeText2 restarted, select Package Control (Sublime Text 2 >
-Preferences > Package Control) and then 'Install Package'. Once they package
-list comes up you can browse for or type 'Lettuce-Farmer'.
+installed and SublimeText2 restarted, select Package Control (`Preferences >
+Package Control`) and then 'Install Package'. Once they package list comes up
+you can browse for or type 'Lettuce-Farmer'.
 
 Using Git:
 ----------
 Clone the Lettuce-Farmer repository in your Packages directory. You can find
-where the directory via Sublime Text 2 > Preferences > Browse Packages...
+where the directory via `Preferences > Browse Packages...`
 
     git clone https://github.com/kylederkacz/lettuce-farmer.git
 
@@ -46,8 +46,7 @@ Manual:
 plugin from Git and extract the contents into a folder in your Packages
 directory.
 
-To open your packages directory goto Sublime Text > Preferences > 
-Browse Packages...
+To open your packages directory goto `Preferences > Browse Packages...`
 
 Platform Support
 ================
