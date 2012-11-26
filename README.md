@@ -25,8 +25,6 @@ Your list may not look the same, but the critical part is that
 
 Using Package Control:
 ----------------------
-**SUBMITTED BUT NOT YET PULLED INTO PACKAGE CONTROL**
-
 [Package Control](http://wbond.net/sublime_packages/package_control) is by far
 the easiest way to install Lettuce-Farmer. Once you have Package Control
 installed and SublimeText2 restarted, select Package Control (`Preferences >
